@@ -9,6 +9,10 @@ contract Voting is BaseToken {
     string public symbol;
     string public version = 'U1';
 
+    event IssueCreated(uint256 issue);
+    
+    uint256 public maxIssue = 0;
+    
     // issue => votes
     mapping (uint256 => int256) votes;
     
@@ -27,9 +31,14 @@ contract Voting is BaseToken {
         emit Transfer(address(this), msg.sender, msg.value);
     }
 
+    function createIssue() external returns (uint256) {
+      return ++maxIssue;
+    }
+    
     function vote(uint256 _issue, bool _yes) external {
         int256 _value = _yes ? int256(balances[msg.sender]) : -int256(balances[msg.sender]);
         votes[_issue] += -voters[msg.sender][_issue] + _value; // reclaim the previous vote
         voters[msg.sender][_issue] = _value;
+        emit IssueCreated(_issue);
     }
 }

@@ -11,12 +11,7 @@ contract Categories is BaseToken {
 
     uint maxId = 0;
     
-    event FileAdded(uint256 indexed id, uint indexed version, string name, string description);
-
-    struct Subcategory {
-        Category category;
-        int256 votes;
-    }
+    event FileAdded(uint256 indexed id, uint indexed version, string title, string description);
 
     // voter => (issue => value)
     mapping (address => mapping (uint256 => int256)) voters;
@@ -24,12 +19,17 @@ contract Categories is BaseToken {
     struct File {
         uint256 id;
         int256 votes;
-        string[46][] link; // array of file versions
+        byte[46][] links; // array of file versions
         uint256 eventBlock;
     }
     
-    struct Category {
+    struct Subcategory {
         uint256 id;
+        Category category;
+        int256 votes;
+    }
+
+    struct Category {
         uint256[] subcategories;
         File[] files;
     }
@@ -51,6 +51,19 @@ contract Categories is BaseToken {
         emit Transfer(address(this), msg.sender, msg.value);
     }
 
+/// Files ///
+
+    function createFile(uint256 _categoryId, bytes calldata _link, string calldata _title, string calldata _description) external {
+        byte[46][] memory _links = new byte[46][](1);
+        for (uint i=0; i<46; ++i)
+            _links[0][i] = _link[i];
+        File memory file = File({id: ++maxId, votes: 0, links: _links, eventBlock: block.number});
+        Category storage category = categories[_categoryId].category;
+        files[maxId] = file;
+        category.files.push(file);
+        emit FileAdded(file.id, category.files.length, _title, _description);
+    }
+    
 /// Voting ///
 
     function voteForFile(uint256 _issue, bool _yes) external {

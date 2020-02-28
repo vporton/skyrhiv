@@ -63,7 +63,11 @@ contract Categories is BaseToken {
         category.files.push(file);
         emit FileAdded(file.id, category.files.length, _title, _description);
     }
-    
+
+    function addFileToCategory(uint256 _categoryId, uint256 _fileId) external {
+        categories[_categoryId].category.files.push(files[_fileId]);
+    }
+
 /// Voting ///
 
     function voteForFile(uint256 _issue, bool _yes) external {
